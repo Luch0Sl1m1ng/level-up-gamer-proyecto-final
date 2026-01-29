@@ -6,56 +6,127 @@ function App() {
   const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')));
   const [cart, setCart] = useState([]);
   const [productos, setProductos] = useState([]);
+  const [boletas, setBoletas] = useState([]);
+  
+
+  const IP_AWS = 'http://54.90.162.162:3000';
 
   useEffect(() => {
-    fetch('http://TU_IP_PUBLICA_AWS:3000/productos')
-      .then(res => res.json()).then(data => setProductos(data));
+    fetch(`${IP_AWS}/productos`)
+      .then(res => res.json())
+      .then(data => setProductos(data))
+      .catch(err => console.error("Error cargando productos:", err));
   }, []);
 
-  const total = cart.reduce((acc, p) => acc + (p.precio * p.cantidad), 0);
 
-  const agregarAlCarrito = (p) => {
-    const existe = cart.find(i => i.id_producto === p.id_producto);
-    if (existe) setCart(cart.map(i => i.id_producto === p.id_producto ? {...i, cantidad: i.cantidad + 1} : i));
-    else setCart([...cart, {...p, cantidad: 1}]);
+
+  const manejarRegistro = async (e) => {
+    e.preventDefault();
+    const nombre = e.target.nom.value;
+    const email = e.target.em.value;
+    const pass = e.target.pass.value;
+
+    if (!nombre || !email || !pass) return alert("¡No puedes dejar campos vacíos!");
+    
+    const res = await fetch(`${IP_AWS}/registro`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nombre, email, password: pass })
+    });
+
+    if (res.ok) {
+      alert("Registro exitoso, ahora inicia sesión");
+      setView('login');
+    } else {
+      alert("Error en el registro");
+    }
+  };
+
+  const manejarLogin = async (e) => {
+    e.preventDefault();
+    const email = e.target.em.value;
+    const pass = e.target.pass.value;
+
+    if (!email || !pass) return alert("Ingresa tus credenciales");
+
+    const res = await fetch(`${IP_AWS}/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: pass })
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      localStorage.setItem('user', JSON.stringify(data));
+      setUser(data);
+      setView('tienda');
+    } else {
+      alert("Correo o contraseña incorrectos");
+    }
   };
 
   const finalizarCompra = async () => {
     if (!user) return setView('login');
-    const res = await fetch('http://TU_IP_PUBLICA_AWS:3000/boletas', {
+    const total = cart.reduce((acc, p) => acc + (p.precio * p.cantidad), 0);
+    
+    const res = await fetch(`${IP_AWS}/boletas`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${user.token}` },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${user.token}` 
+      },
       body: JSON.stringify({ total, productos: cart })
     });
-    if (res.ok) { setCart([]); alert('Compra exitosa'); setView('historial'); }
+
+    if (res.ok) {
+      alert("¡Compra realizada! Boleta generada.");
+      setCart([]);
+      setView('tienda');
+    }
   };
+
+
 
   return (
     <div className="bg-light min-vh-100">
-      <nav className="navbar navbar-dark bg-dark px-4 mb-4">
-        <span className="navbar-brand pointer" onClick={() => setView('tienda')}>LevelUp Gamer</span>
-        <div>
+      {/* NAVBAR */}
+      <nav className="navbar navbar-expand-lg navbar-dark bg-dark px-4 shadow">
+        <span className="navbar-brand fw-bold">LevelUp Gamer</span>
+        <div className="ms-auto">
           <button className="btn btn-outline-light me-2" onClick={() => setView('tienda')}>Tienda</button>
           {!user ? (
-            <button className="btn btn-primary" onClick={() => setView('registro')}>Registrarse</button>
+            <>
+              <button className="btn btn-outline-light me-2" onClick={() => setView('login')}>Login</button>
+              <button className="btn btn-primary" onClick={() => setView('registro')}>Registrarse</button>
+            </>
           ) : (
-            <button className="btn btn-info" onClick={() => setView('historial')}>Mis Compras</button>
+            <>
+              {user.rol === 'vendedor' && (
+                <button className="btn btn-info me-2" onClick={() => setView('inventario')}>Inventario</button>
+              )}
+              <button className="btn btn-danger" onClick={() => { localStorage.clear(); setUser(null); setView('tienda'); }}>Salir</button>
+            </>
           )}
           <button className="btn btn-warning ms-2" onClick={() => setView('carrito')}>🛒 ({cart.length})</button>
         </div>
       </nav>
 
-      <div className="container">
+      <div className="container mt-5">
+        {/* VISTA TIENDA */}
         {view === 'tienda' && (
           <div className="row">
             {productos.map(p => (
-              <div key={p.id_producto} className="col-md-4 mb-3">
-                <div className="card shadow-sm h-100">
+              <div key={p.id_producto} className="col-md-4 mb-4">
+                <div className="card h-100 shadow-sm border-0">
                   <div className="card-body">
-                    <h5>{p.nombre}</h5>
-                    <p className="text-muted small">{p.descripcion}</p>
-                    <h5 className="text-primary">${p.precio}</h5>
-                    <button className="btn btn-success w-100" onClick={() => agregarAlCarrito(p)}>Comprar</button>
+                    <h5 className="card-title fw-bold">{p.nombre}</h5>
+                    <p className="card-text text-muted small">{p.descripcion}</p>
+                    <h5 className="text-primary fw-bold">${p.precio}</h5>
+                    <button className="btn btn-success w-100 mt-2" onClick={() => {
+                      const exists = cart.find(item => item.id_producto === p.id_producto);
+                      if (exists) setCart(cart.map(item => item.id_producto === p.id_producto ? {...item, cantidad: item.cantidad + 1} : item));
+                      else setCart([...cart, {...p, cantidad: 1}]);
+                    }}>Añadir</button>
                   </div>
                 </div>
               </div>
@@ -63,37 +134,60 @@ function App() {
           </div>
         )}
 
+        {/* VISTA REGISTRO */}
         {view === 'registro' && (
-          <div className="card mx-auto p-4 shadow" style={{maxWidth: '400px'}}>
-            <h3>Crear Cuenta</h3>
-            <input type="text" id="reg-nom" placeholder="Nombre" className="form-control mb-2" />
-            <input type="email" id="reg-em" placeholder="Email" className="form-control mb-2" />
-            <input type="password" id="reg-pass" placeholder="Password" className="form-control mb-3" />
-            <button className="btn btn-primary w-100" onClick={async () => {
-               const nombre = document.getElementById('reg-nom').value;
-               const email = document.getElementById('reg-em').value;
-               const password = document.getElementById('reg-pass').value;
-               const res = await fetch('http://TU_IP_PUBLICA_AWS:3000/registro', {
-                 method: 'POST',
-                 headers: {'Content-Type': 'application/json'},
-                 body: JSON.stringify({nombre, email, password})
-               });
-               if (res.ok) setView('login');
-            }}>Registrar</button>
+          <div className="card p-4 mx-auto shadow" style={{maxWidth: '400px'}}>
+            <h3 className="text-center mb-4">Crear Cuenta</h3>
+            <form onSubmit={manejarRegistro}>
+              <input name="nom" type="text" placeholder="Nombre completo" className="form-control mb-3" required />
+              <input name="em" type="email" placeholder="Correo electrónico" className="form-control mb-3" required />
+              <input name="pass" type="password" placeholder="Contraseña (mín. 6)" className="form-control mb-3" required minLength="6" />
+              <button type="submit" className="btn btn-primary w-100">Registrarme</button>
+            </form>
           </div>
         )}
 
-        {view === 'carrito' && (
+        {/* VISTA INVENTARIO (ADMIN) */}
+        {view === 'inventario' && (
           <div className="card p-4 shadow">
-            <h3>Tu Pedido</h3>
-            {cart.map(item => (
-              <div key={item.id_producto} className="d-flex justify-content-between border-bottom py-2">
-                <span>{item.nombre} x{item.cantidad}</span>
-                <span>${item.precio * item.cantidad}</span>
-              </div>
-            ))}
-            <h4 className="mt-3">Total: ${total}</h4>
-            <button className="btn btn-success w-100 mt-3" onClick={finalizarCompra}>Pagar y Generar Boleta</button>
+            <h2 className="mb-4">Inventario Level-Up Gamer</h2>
+            <button className="btn btn-primary mb-3" style={{width: '180px'}}>Agregar Producto</button>
+            <table className="table table-hover">
+              <thead className="table-dark">
+                <tr>
+                  <th>ID</th><th>Nombre</th><th>Precio</th><th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {productos.map(p => (
+                  <tr key={p.id_producto}>
+                    <td>{p.id_producto}</td><td>{p.nombre}</td><td>${p.precio}</td>
+                    <td><button className="btn btn-sm btn-danger">Eliminar</button></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        
+        {/* VISTA CARRITO */}
+        {view === 'carrito' && (
+          <div className="card p-4 shadow mx-auto" style={{maxWidth: '600px'}}>
+            <h3>Tu Carrito</h3>
+            <hr />
+            {cart.length === 0 ? <p>El carrito está vacío</p> : (
+              <>
+                {cart.map(item => (
+                  <div key={item.id_producto} className="d-flex justify-content-between mb-2">
+                    <span>{item.nombre} (x{item.cantidad})</span>
+                    <span>${item.precio * item.cantidad}</span>
+                  </div>
+                ))}
+                <hr />
+                <h4 className="text-end">Total: ${cart.reduce((acc, p) => acc + (p.precio * p.cantidad), 0)}</h4>
+                <button className="btn btn-success w-100 mt-3" onClick={finalizarCompra}>Finalizar Compra y Generar Boleta</button>
+              </>
+            )}
           </div>
         )}
       </div>
