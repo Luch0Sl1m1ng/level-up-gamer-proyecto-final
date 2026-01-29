@@ -14,7 +14,6 @@ const pool = new Pool({
   allowExitOnIdle: true
 });
 
-// Test de conexión
 pool.query('SELECT NOW()', (err, res) => {
     if (err) {
         console.error('Error de conexión BD:', err.stack);
