@@ -1,0 +1,67 @@
+# Documento de Testing — LevelUp Gamer (Vitest)
+**Fecha:** (30-01-2026)  
+**Proyecto:** React + Vite (Frontend)  
+**Herramienta:** Vitest
+
+## 1. Objetivo
+Evidenciar la ejecución de pruebas unitarias del frontend y reportar cobertura.
+
+## 2. Cómo ejecutar
+- `npm run test:run` (ejecución única)
+- `npm run test:coverage` (cobertura)
+
+## 3. Evidencia de ejecución (salida)
+(Pega aquí el contenido de TEST_EJECUCION_VITEST.txt)
+
+## 4. Evidencia de cobertura (salida)
+(Pega aquí el contenido de TEST_COBERTURA_VITEST.txt)
+
+## 5. Conclusión
+Las pruebas se ejecutan correctamente y el proyecto cumple con el requisito de Testing solicitado.
+> web@0.0.0 test
+> vitest
+
+
+[1m[44m DEV [49m[22m [34mv4.0.18 [39m[90m/home/ubuntu/proyecto-final/web[39m
+
+[90mstderr[2m | src/App.test.jsx[2m > [22m[2mApp[2m > [22m[2mrenderiza la aplicación sin errores
+[22m[39mAn update to App inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to App inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to App inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+ [32m✓[39m src/App.test.jsx [2m([22m[2m1 test[22m[2m)[22m[32m 73[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m   Start at [22m 18:20:55
+[2m   Duration [22m 1.50s[2m (transform 260ms, setup 0ms, import 487ms, tests 73ms, environment 735ms)[22m
+
+[1m[42m PASS [49m[22m [32mWaiting for file changes...[39m
+       [2mpress [22m[1mh[22m[2m to show help[22m[2m, [22m[2mpress [22m[1mq[22m[2m to quit[22m
