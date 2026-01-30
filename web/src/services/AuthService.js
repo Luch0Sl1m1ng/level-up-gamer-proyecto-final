@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://98.88.249.13:3000';
+const API_URL = 'http://54.242.30.23:3000';
 
 class AuthService {
     
@@ -8,7 +8,7 @@ class AuthService {
         return axios.post(API_URL + "/login", usuario)
             .then(response => {
                 if (response.data.token) {
-                    // Guardamos el token en la memoria del navegador
+
                     localStorage.setItem("user", JSON.stringify(response.data));
                 }
                 return response.data;

@@ -1,4 +1,4 @@
-const BASE_URL = 'http://54.90.162.162:3000';
+const BASE_URL = 'http://54.242.30.23:3000';
 
 export const callApi = async (endpoint, method = 'GET', body = null, token = null) => {
     const headers = { 'Content-Type': 'application/json' };

@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://98.88.249.13:3000/productos';
+const API_URL = 'http://54.242.30.23:3000/productos';
 
 class ProductoService {
     
